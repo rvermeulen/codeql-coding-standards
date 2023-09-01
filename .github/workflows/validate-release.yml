@@ -19,9 +19,6 @@ permissions:
   contents: read
   actions: write
 
-env:
-  GITHUB_TOKEN: ${{ github.token }}
-
 jobs:
 
   determine-release-version:
@@ -55,7 +52,7 @@ jobs:
     needs: determine-release-version
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.CHECK_RUNS_TOKEN }}
+      GH_TOKEN: ${{ secrets.CHECK_RUNS_TOKEN }}
     steps:
       - name: Create check run
         run: |
@@ -75,6 +72,6 @@ jobs:
         env:
           CHECK_RUN_ID: ${{ env.check-run-id }}
           RELEASE_VERSION: ${{ needs.determine-release-version.outputs.release-version }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_ENGINEERING_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_ENGINEERING_TOKEN }}
         run: |
           echo "{\"version\": \"$RELEASE_VERSION\", \"check-run-id\": \"$CHECK_RUN_ID\"}" | gh workflow run release-performance-testing.yml --json -R github/codeql-coding-standards-release-engineering --ref rvermeulen/release-process
