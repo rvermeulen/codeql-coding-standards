@@ -55,7 +55,7 @@ jobs:
     needs: determine-release-version
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.CHECK_RUNS_TOKEN }}
+      GH_TOKEN: ${{ secrets.CHECK_RUNS_TOKEN }}
     steps:
       - name: Create check run
         run: |
