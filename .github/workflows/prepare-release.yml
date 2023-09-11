@@ -33,6 +33,24 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest 
     steps:
+      - name: Validate release precondition
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release list -R $GITHUB_REPOSITORY | awk -v release="v$RELEASE_VERSION" -- '$1 ~ release { print $1,$2; ++n } END { if (n == 0) print "undefined" "undefined"}' - | read -r release type
+          if [ "$release" != "undefined" ]; then
+            echo "create-draft-release=true" >> "$GITHUB_ENV"
+          else
+            if [ $type != "draft" ]; then
+              echo "Release v$RELEASE_VERSION already exists and is not a draft. Cannot proceed"
+              exit 1
+            else
+              echo "Release v$RELEASE_VERSION already exists and is a draft. Proceeding"
+              echo "create-draft-release=false" >> "$GITHUB_ENV"
+            fi
+          fi
+
       - name: Checkout 
         uses: actions/checkout@v3
         with:
@@ -54,6 +72,18 @@ jobs:
         run: |
           git switch -c rc/$RELEASE_VERSION
           git push --set-upstream origin rc/$RELEASE_VERSION
+
+      - name: Create draft release
+        if: github.env.create-draft-release == 'true'
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          gh release create \
+          -R $GITHUB_REPOSITORY \
+          --title "v$RELEASE_VERSION" \
+          --draft \
+          --target rc/$RELEASE_VERSION \
+          $RELEASE_VERSION
 
       - name: Create feature branch for PR
         run: |
