@@ -94,7 +94,7 @@ jobs:
             --input - \
             /repos/$GITHUB_REPOSITORY/check-runs/$CHECK_RUN_ID
 
-  pre-validate-release-performance:
+  pre-validate-performance:
     outputs:
       check-run-id: ${{ steps.create-check-run.outputs.check-run-id }}}
     needs: [determine-ref]
@@ -116,8 +116,8 @@ jobs:
 
           echo "check-run-id=$check_run_id" >> "$GITHUB_OUTPUT"
 
-  validate-release-performance:
-    needs: [pre-validate-release-performance, determine-ref]
+  validate-performance:
+    needs: [pre-validate-performance, determine-ref]
     runs-on: ubuntu-latest
     steps:
       - name: Invoke performance test
@@ -136,8 +136,8 @@ jobs:
           -R github/codeql-coding-standards-release-engineering \
           --ref rvermeulen/release-process
 
-  on-failure-validate-release-performance:
-    needs: [pre-validate-release-performance, validate-release-performance]
+  on-failure-validate-performance-dispatch:
+    needs: [pre-validate-performance, validate-performance]
     if: failure()
     runs-on: ubuntu-latest
     steps:
