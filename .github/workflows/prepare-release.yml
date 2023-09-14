@@ -57,9 +57,18 @@ jobs:
             echo "Release branch rc/$RELEASE_VERSION does not exist."
             echo "create_release_branch=true" >> "$GITHUB_ENV"
             echo "create_release_pr=true" >> "$GITHUB_ENV"
+            echo "create_release_feature_branch=true" >> "$GITHUB_ENV"
           else
             echo "Release branch rc/$RELEASE_VERSION already exists."
             echo "create_release_branch=false" >> "$GITHUB_ENV"
+
+            if [[ -z $(git ls-remote --heads origin feature/update-user-manual-for-$RELEASE_VERSION) ]]; then
+              echo "Feature branch feature/update-user-manual-for-$RELEASE_VERSION does not exist."
+              echo "create_release_feature_branch=true" >> "$GITHUB_ENV"
+            else
+              echo "Feature branch feature/update-user-manual-for-$RELEASE_VERSION already exists."
+              echo "create_release_feature_branch=false" >> "$GITHUB_ENV"
+            fi
 
             pr_state=$(gh pr view rc/$RELEASE_VERSION --json title,state)
             pr_title=$(echo "$pr_state" | jq -r '.title')
@@ -109,13 +118,13 @@ jobs:
           $RELEASE_VERSION
 
       - name: Create feature branch for PR
-        if: env.create_release_pr == 'true'
+        if: env.create_release_feature_branch == 'true'
         run: |
           git switch -c feature/update-user-manual-for-$RELEASE_VERSION
           git push --set-upstream origin feature/update-user-manual-for-$RELEASE_VERSION
 
       - name: Get feature branch for PR
-        if: env.create_release_pr == 'false'
+        if: env.create_release_feature_branch == 'false'
         run: |
           git fetch origin feature/update-user-manual-for-$RELEASE_VERSION
           git switch feature/update-user-manual-for-$RELEASE_VERSION
