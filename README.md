@@ -1,4 +1,4 @@
-# CodeQL Coding Standards
+# CodeQL Coding Standards Test
 
 This repository contains CodeQL queries and libraries which support various Coding Standards.
 
